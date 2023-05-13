@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS transactions (
+    id SERIAL PRIMARY KEY,
+    type VARCHAR(1) NOT NULL,
+    date DATE NOT NULL,
+    value FLOAT NOT NULL,
+    cpf VARCHAR(11) NOT NULL,
+    card VARCHAR(12) NOT NULL,
+    time TIME NOT NULL,
+    owner VARCHAR(14) NOT NULL,
+    market VARCHAR(19) NOT NULL
+)
