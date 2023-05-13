@@ -10,9 +10,10 @@ import (
 	"time"
 )
 
-const createTransaction = `-- name: CreateTransaction :exec
+const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO desafio_dev.public.transactions (type, date, value, cpf, card, time, owner, market)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, type, date, value, cpf, card, time, owner, market
 `
 
 type CreateTransactionParams struct {
@@ -26,8 +27,20 @@ type CreateTransactionParams struct {
 	Market string    `json:"market"`
 }
 
-func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) error {
-	_, err := q.db.ExecContext(ctx, createTransaction,
+type CreateTransactionRow struct {
+	ID     int32     `json:"id"`
+	Type   string    `json:"type"`
+	Date   time.Time `json:"date"`
+	Value  float64   `json:"value"`
+	Cpf    string    `json:"cpf"`
+	Card   string    `json:"card"`
+	Time   time.Time `json:"time"`
+	Owner  string    `json:"owner"`
+	Market string    `json:"market"`
+}
+
+func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (CreateTransactionRow, error) {
+	row := q.db.QueryRowContext(ctx, createTransaction,
 		arg.Type,
 		arg.Date,
 		arg.Value,
@@ -37,7 +50,19 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		arg.Owner,
 		arg.Market,
 	)
-	return err
+	var i CreateTransactionRow
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.Date,
+		&i.Value,
+		&i.Cpf,
+		&i.Card,
+		&i.Time,
+		&i.Owner,
+		&i.Market,
+	)
+	return i, err
 }
 
 const getTransaction = `-- name: GetTransaction :one

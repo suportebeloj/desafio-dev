@@ -12,7 +12,8 @@ WHERE market = $1;
 SELECT market
 FROM desafio_dev.public.transactions;
 
--- name: CreateTransaction :exec
+-- name: CreateTransaction :one
 INSERT INTO desafio_dev.public.transactions (type, date, value, cpf, card, time, owner, market)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING *;
 
