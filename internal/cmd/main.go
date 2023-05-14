@@ -7,6 +7,7 @@ import (
 	"github.com/suportebeloj/desafio-dev/internal/frameworks/http/api"
 	"github.com/suportebeloj/desafio-dev/internal/usecases"
 	"log"
+	"os"
 )
 
 func main() {
@@ -17,6 +18,6 @@ func main() {
 	log.Println("transaction service running")
 
 	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService, UseLogger: true})
-	httpService.Run(":8000")
+	httpService.Run(os.Getenv("PORT"))
 
 }
