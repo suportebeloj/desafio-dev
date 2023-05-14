@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/swagger"
+	_ "github.com/suportebeloj/desafio-dev/docs"
 	"github.com/suportebeloj/desafio-dev/internal/db/postgres"
 	"github.com/suportebeloj/desafio-dev/internal/protocols"
 	"io"
@@ -44,6 +46,7 @@ func (H *HTTPApiService) routes() {
 	group.Add("POST", "new", H.CreateTransaction)
 	group.Add("GET", "markets", H.ListMarkets)
 	group.Add("GET", "detail/:market", H.MarketDetail)
+	H.Swagger()
 }
 
 func (H *HTTPApiService) Run(addrs string) error {
@@ -52,6 +55,16 @@ func (H *HTTPApiService) Run(addrs string) error {
 	return nil
 }
 
+// CreateTransaction godoc
+// @Summary      Create a Transaction
+// @Description  upload a CNAB file to save the transactions on database
+// @Accept       multipart/form-data
+// @Produce      text/plain; charset=utf-8
+// @Param        transactions   formData      file  true  "CNAB file"
+// @Success      200
+// @Failure      400
+// @Failure      500
+// @Router       /new [post]
 func (H *HTTPApiService) CreateTransaction(c *fiber.Ctx) error {
 	file, err := c.FormFile("transactions")
 	if err != nil {
@@ -80,6 +93,14 @@ func (H *HTTPApiService) CreateTransaction(c *fiber.Ctx) error {
 	return c.SendStatus(200)
 }
 
+// ListMarkets godoc
+// @Summary      List Registered stores
+// @Description  return a json contains a list of string representing the registered stores
+// @Accept       text/plain; charset=utf-8
+// @Produce      application/json
+// @Success      200
+// @Failure      500
+// @Router       /markets [get]
 func (H *HTTPApiService) ListMarkets(c *fiber.Ctx) error {
 	result, err := H.dbService.ListMarkets(context.Background())
 	if err != nil {
@@ -89,6 +110,16 @@ func (H *HTTPApiService) ListMarkets(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// MarketDetail godoc
+// @Summary      Market Detail
+// @Description  return a json contains information about the store and your transactions
+// @Accept       text/plain; charset=utf-8
+// @Produce      application/json
+// @Param        market   path      string  true  "market name"
+// @Success      200
+// @Failure      404
+// @Failure      500
+// @Router       /detail/{market} [get]
 func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
 	market := c.Params("market")
 	market, err := url.QueryUnescape(market)
@@ -128,4 +159,13 @@ func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusNotFound).SendString("No transactions found for this store")
 
+}
+
+func (H *HTTPApiService) Swagger() {
+	H.App.Get("/swagger/*", swagger.HandlerDefault)
+	H.App.Get("/swagger/*", swagger.New(swagger.Config{
+		URL:          "http://localhost:8000/docs.json",
+		DeepLinking:  false,
+		DocExpansion: "none",
+	}))
 }
