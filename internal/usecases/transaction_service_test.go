@@ -69,3 +69,30 @@ func TestTransactionService_TotalBalance(t *testing.T) {
 	assert.Equal(t, result, 0.0)
 
 }
+
+func TestTransactionService_ListOperations(t *testing.T) {
+	dbService := testMock.NewDbService()
+	expected := []postgres.ListMarketTransactionRow{
+		{ID: 1, Type: "1", Date: time.Now(), Value: 123, Cpf: "123445412", Card: "123324423", Time: time.Now(), Owner: "Test owner", Market: "Test Market"},
+		{ID: 1, Type: "2", Date: time.Now(), Value: 321, Cpf: "423423434", Card: "534523f34", Time: time.Now(), Owner: "Test owner", Market: "Test Market"},
+		{ID: 1, Type: "3", Date: time.Now(), Value: 223, Cpf: "213423423", Card: "34345t455", Time: time.Now(), Owner: "Test owner", Market: "Test Market"},
+	}
+
+	calledFunc := dbService.On("ListMarketTransaction", mock.Anything, mock.Anything).Return(expected, nil)
+
+	parser := core.NewTransactionParser()
+
+	instance := usecases.NewTransactionService(dbService, parser)
+	results, err := instance.ListOperations("Test Market")
+	assert.NoError(t, err)
+	assert.Equal(t, expected, results)
+
+	dbService.AssertExpectations(t)
+
+	calledFunc.Unset()
+	dbService.On("ListMarketTransaction", mock.Anything, mock.Anything).Return([]postgres.ListMarketTransactionRow{}, errors.New("invalid market name"))
+
+	results, err = instance.ListOperations("Invalid Test Market")
+	assert.Error(t, err)
+	assert.Nil(t, results)
+}
