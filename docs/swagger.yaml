@@ -1,0 +1,72 @@
+basePath: /api/v1
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8000
+info:
+  contact:
+    email: carlos.e.alves2@proton.me
+    name: Carlos
+    url: https://github.com/suportebeloj
+  description: Test server for dev challenge.
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Desafio Dev
+  version: "1.0"
+paths:
+  /detail/{market}:
+    get:
+      consumes:
+      - text/plain; charset=utf-8
+      description: return a json contains information about the store and your transactions
+      parameters:
+      - description: market name
+        in: path
+        name: market
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Market Detail
+  /markets:
+    get:
+      consumes:
+      - text/plain; charset=utf-8
+      description: return a json contains a list of string representing the registered
+        stores
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: List Registered stores
+  /new:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a CNAB file to save the transactions on database
+      parameters:
+      - description: CNAB file
+        in: formData
+        name: transactions
+        required: true
+        type: file
+      produces:
+      - text/plain; charset=utf-8
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Create a Transaction
+swagger: "2.0"
