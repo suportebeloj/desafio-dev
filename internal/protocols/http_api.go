@@ -7,5 +7,4 @@ type IHTTPApiService interface {
 	CreateTransaction(c *fiber.Ctx) error
 	ListMarkets(c *fiber.Ctx) error
 	MarketDetail(c *fiber.Ctx) error
-	MarketBalance(c *fiber.Ctx) error
 }
