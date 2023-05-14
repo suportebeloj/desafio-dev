@@ -30,9 +30,13 @@ func (m *TransactionService) NewTransaction(transaction string) (postgres.Create
 
 }
 
-func (m *TransactionService) TotalBalance(marketName string) float64 {
-	//TODO implement me
-	panic("implement me")
+func (m *TransactionService) TotalBalance(marketName string) (float64, error) {
+	result, err := m.dbService.MarketBalance(context.Background(), marketName)
+	if err != nil {
+		return 0, err
+	}
+	return result, nil
+
 }
 
 func (m *TransactionService) ListOperations(id int) []postgres.Transaction {
