@@ -106,6 +106,10 @@ func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
 		return err
 	}
 
+	if balance < 0 {
+		balance = balance * -1
+	}
+
 	if len(result) > 0 {
 		info := struct {
 			MarketName string                              `json:"market_name"`
@@ -115,7 +119,7 @@ func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
 		}{
 			MarketName: result[0].Market,
 			Owner:      result[0].Owner,
-			Balance:    balance * -1.0,
+			Balance:    balance,
 			Operations: result,
 		}
 
