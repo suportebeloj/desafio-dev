@@ -103,7 +103,7 @@ func (q *Queries) GetTransaction(ctx context.Context, id int32) (GetTransactionR
 const listMarketTransaction = `-- name: ListMarketTransaction :many
 SELECT id, type, date, value, cpf, card, time, owner, market
 from desafio_dev.public.transactions
-WHERE market = $1
+WHERE id = $1
 `
 
 type ListMarketTransactionRow struct {
@@ -118,8 +118,8 @@ type ListMarketTransactionRow struct {
 	Market string    `json:"market"`
 }
 
-func (q *Queries) ListMarketTransaction(ctx context.Context, market string) ([]ListMarketTransactionRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMarketTransaction, market)
+func (q *Queries) ListMarketTransaction(ctx context.Context, id int32) ([]ListMarketTransactionRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMarketTransaction, id)
 	if err != nil {
 		return nil, err
 	}
@@ -152,23 +152,28 @@ func (q *Queries) ListMarketTransaction(ctx context.Context, market string) ([]L
 }
 
 const listMarkets = `-- name: ListMarkets :many
-SELECT market
+SELECT id, market
 FROM desafio_dev.public.transactions
 `
 
-func (q *Queries) ListMarkets(ctx context.Context) ([]string, error) {
+type ListMarketsRow struct {
+	ID     int32  `json:"id"`
+	Market string `json:"market"`
+}
+
+func (q *Queries) ListMarkets(ctx context.Context) ([]ListMarketsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listMarkets)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []string
+	var items []ListMarketsRow
 	for rows.Next() {
-		var market string
-		if err := rows.Scan(&market); err != nil {
+		var i ListMarketsRow
+		if err := rows.Scan(&i.ID, &i.Market); err != nil {
 			return nil, err
 		}
-		items = append(items, market)
+		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

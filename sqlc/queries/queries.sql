@@ -6,7 +6,7 @@ WHERE id = $1;
 -- name: ListMarketTransaction :many
 SELECT *
 from desafio_dev.public.transactions
-WHERE market = $1;
+WHERE id = $1;
 
 -- name: MarketBalance :one
 SELECT CAST(sum(
@@ -19,7 +19,7 @@ FROM desafio_dev.public.transactions
 WHERE market = $1;
 
 -- name: ListMarkets :many
-SELECT market
+SELECT id, market
 FROM desafio_dev.public.transactions;
 
 -- name: CreateTransaction :one
