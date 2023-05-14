@@ -68,7 +68,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 const getTransaction = `-- name: GetTransaction :one
 SELECT id, type, date, value, cpf, card, time, owner, market
 FROM desafio_dev.public.transactions
-WHERE id = $1
+WHERE market = $1
 `
 
 type GetTransactionRow struct {
@@ -83,8 +83,8 @@ type GetTransactionRow struct {
 	Market string    `json:"market"`
 }
 
-func (q *Queries) GetTransaction(ctx context.Context, id int32) (GetTransactionRow, error) {
-	row := q.db.QueryRowContext(ctx, getTransaction, id)
+func (q *Queries) GetTransaction(ctx context.Context, market string) (GetTransactionRow, error) {
+	row := q.db.QueryRowContext(ctx, getTransaction, market)
 	var i GetTransactionRow
 	err := row.Scan(
 		&i.ID,
@@ -103,7 +103,7 @@ func (q *Queries) GetTransaction(ctx context.Context, id int32) (GetTransactionR
 const listMarketTransaction = `-- name: ListMarketTransaction :many
 SELECT id, type, date, value, cpf, card, time, owner, market
 from desafio_dev.public.transactions
-WHERE id = $1
+WHERE market = $1
 `
 
 type ListMarketTransactionRow struct {
@@ -118,8 +118,8 @@ type ListMarketTransactionRow struct {
 	Market string    `json:"market"`
 }
 
-func (q *Queries) ListMarketTransaction(ctx context.Context, id int32) ([]ListMarketTransactionRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMarketTransaction, id)
+func (q *Queries) ListMarketTransaction(ctx context.Context, market string) ([]ListMarketTransactionRow, error) {
+	rows, err := q.db.QueryContext(ctx, listMarketTransaction, market)
 	if err != nil {
 		return nil, err
 	}
@@ -152,28 +152,23 @@ func (q *Queries) ListMarketTransaction(ctx context.Context, id int32) ([]ListMa
 }
 
 const listMarkets = `-- name: ListMarkets :many
-SELECT id, market
+SELECT market
 FROM desafio_dev.public.transactions
 `
 
-type ListMarketsRow struct {
-	ID     int32  `json:"id"`
-	Market string `json:"market"`
-}
-
-func (q *Queries) ListMarkets(ctx context.Context) ([]ListMarketsRow, error) {
+func (q *Queries) ListMarkets(ctx context.Context) ([]string, error) {
 	rows, err := q.db.QueryContext(ctx, listMarkets)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListMarketsRow
+	var items []string
 	for rows.Next() {
-		var i ListMarketsRow
-		if err := rows.Scan(&i.ID, &i.Market); err != nil {
+		var market string
+		if err := rows.Scan(&market); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, market)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
