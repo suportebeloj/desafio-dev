@@ -16,6 +16,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type StubParser struct {
@@ -123,5 +124,86 @@ func TestHTTPApiService_ListMarkets_ReturnAValidList_ContainsValidMarkets(t *tes
 	resp, err = httpService.App.Test(req)
 	assert.NoError(t, err)
 	assert.Equal(t, resp.StatusCode, fiber.StatusInternalServerError)
+
+}
+
+func TestHTTPApiService_MarketDetail_ReceiveAValidStore_AndReturnADetailedStruct(t *testing.T) {
+
+	type responseBody struct {
+		MarketName string                              `json:"market_name"`
+		Owner      string                              `json:"owner"`
+		Balance    float64                             `json:"balance"`
+		Operations []postgres.ListMarketTransactionRow `json:"operations"`
+	}
+
+	operations := []postgres.ListMarketTransactionRow{
+		{
+			ID:     1,
+			Type:   "1",
+			Date:   time.Now(),
+			Value:  222,
+			Cpf:    "00000000000",
+			Card:   "000000000000000",
+			Time:   time.Now(),
+			Owner:  "Test Owner",
+			Market: "Test store",
+		},
+		{
+			ID:     2,
+			Type:   "3",
+			Date:   time.Now(),
+			Value:  333,
+			Cpf:    "00200000000",
+			Card:   "000f20000000000",
+			Time:   time.Now(),
+			Owner:  "Test Owner",
+			Market: "Test store",
+		},
+	}
+	expected := responseBody{
+		MarketName: "Test store",
+		Owner:      "Test Owner",
+		Balance:    123456,
+		Operations: operations,
+	}
+
+	req := httptest.NewRequest("GET", "/api/v1/detail/Test%20store", nil)
+
+	dbService := mockService.NewDbService()
+	calledFunc := dbService.On("ListMarketTransaction", mock.Anything, mock.Anything).Return(operations, nil)
+	dbService.On("MarketBalance", mock.Anything, mock.Anything).Return(-123456.0, nil)
+	parser := &StubParser{}
+	transactionService := usecases.NewTransactionService(dbService, parser)
+	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService})
+
+	resp, err := httpService.App.Test(req)
+	assert.NoError(t, err)
+
+	defer resp.Body.Close()
+
+	byteBody, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+
+	body := responseBody{}
+	err = json.Unmarshal(byteBody, &body)
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected.MarketName, body.MarketName)
+	assert.Equal(t, expected.Owner, body.Owner)
+	assert.Equal(t, expected.Balance, body.Balance)
+	assert.Equal(t, expected.Operations[1].Market, body.Operations[1].Market)
+	assert.Equal(t, expected.Operations[1].Value, body.Operations[1].Value)
+
+	dbService.AssertExpectations(t)
+
+	calledFunc.Unset()
+
+	dbService.On("ListMarketTransaction", mock.Anything, mock.Anything).Return([]postgres.ListMarketTransactionRow{}, nil)
+
+	req = httptest.NewRequest("GET", "/api/v1/detail/Test%20store", nil)
+	resp, err = httpService.App.Test(req)
+	assert.NoError(t, err)
+
+	assert.Equal(t, fiber.StatusNotFound, resp.StatusCode)
 
 }
