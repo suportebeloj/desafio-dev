@@ -178,3 +178,21 @@ func (q *Queries) ListMarkets(ctx context.Context) ([]string, error) {
 	}
 	return items, nil
 }
+
+const marketBalance = `-- name: MarketBalance :one
+SELECT CAST(sum(
+               CASE
+                   WHEN type IN ('1', '4', '5', '6', '7', '8') THEN value
+                   WHEN type IN ('2', '3', '9') THEN -value
+                   END
+           ) AS FLOAT) AS total_balance
+FROM desafio_dev.public.transactions
+WHERE market = $1
+`
+
+func (q *Queries) MarketBalance(ctx context.Context, market string) (float64, error) {
+	row := q.db.QueryRowContext(ctx, marketBalance, market)
+	var total_balance float64
+	err := row.Scan(&total_balance)
+	return total_balance, err
+}

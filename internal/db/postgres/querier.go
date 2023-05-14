@@ -13,6 +13,7 @@ type Querier interface {
 	GetTransaction(ctx context.Context, id int32) (GetTransactionRow, error)
 	ListMarketTransaction(ctx context.Context, market string) ([]ListMarketTransactionRow, error)
 	ListMarkets(ctx context.Context) ([]string, error)
+	MarketBalance(ctx context.Context, market string) (float64, error)
 }
 
 var _ Querier = (*Queries)(nil)
