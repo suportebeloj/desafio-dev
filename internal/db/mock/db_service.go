@@ -22,7 +22,7 @@ func (m DbService) GetTransaction(ctx context.Context, id int32) (postgres.GetTr
 
 func (m DbService) ListMarketTransaction(ctx context.Context, market string) ([]postgres.ListMarketTransactionRow, error) {
 	args := m.Called(ctx, market)
-	return args.Get(0).([]postgres.ListMarketTransactionRow), args.Error(0)
+	return args.Get(0).([]postgres.ListMarketTransactionRow), args.Error(1)
 }
 
 func (m DbService) ListMarkets(ctx context.Context) ([]string, error) {
