@@ -3,37 +3,48 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/suportebeloj/desafio-dev/internal/db/postgres"
 	"github.com/suportebeloj/desafio-dev/internal/protocols"
 	"io"
 	"log"
 	"strings"
 )
 
-type HTTPApiSerice struct {
+type HTTPApiService struct {
 	transactionService protocols.ITransactionService
 	App                *fiber.App
+	dbService          postgres.Querier
 }
 
-func NewHTTPApiSerice(transactionService protocols.ITransactionService) *HTTPApiSerice {
-	s := &HTTPApiSerice{transactionService: transactionService}
+type HTTPServiceOptions struct {
+	DbService postgres.Querier
+}
+
+func NewHTTPApiService(transactionService protocols.ITransactionService, option *HTTPServiceOptions) *HTTPApiService {
+	s := &HTTPApiService{transactionService: transactionService}
 	app := fiber.New()
 	s.App = app
 	s.routes()
+
+	if option != nil {
+		s.dbService = option.DbService
+	}
+
 	return s
 }
 
-func (H *HTTPApiSerice) routes() {
+func (H *HTTPApiService) routes() {
 	group := H.App.Group("/api/v1/")
 	group.Add("POST", "new", H.CreateTransaction)
 }
 
-func (H *HTTPApiSerice) Run(addrs string) error {
+func (H *HTTPApiService) Run(addrs string) error {
 	H.App.Use(logger.New())
 	log.Fatalln(H.App.Listen(addrs))
 	return nil
 }
 
-func (H *HTTPApiSerice) CreateTransaction(c *fiber.Ctx) error {
+func (H *HTTPApiService) CreateTransaction(c *fiber.Ctx) error {
 	file, err := c.FormFile("transactions")
 	if err != nil {
 		log.Println("form", err)
@@ -61,17 +72,17 @@ func (H *HTTPApiSerice) CreateTransaction(c *fiber.Ctx) error {
 	return c.SendStatus(200)
 }
 
-func (H *HTTPApiSerice) ListMarkets(c *fiber.Ctx) error {
+func (H *HTTPApiService) ListMarkets(c *fiber.Ctx) error {
+	return nil
+
+}
+
+func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (H *HTTPApiSerice) MarketDetail(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (H HTTPApiSerice) MarketBalance(c *fiber.Ctx) error {
+func (H HTTPApiService) MarketBalance(c *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
 }

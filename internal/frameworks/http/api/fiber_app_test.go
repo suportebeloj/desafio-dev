@@ -49,7 +49,7 @@ func TestHTTPApiSerice_CreateTransaction(t *testing.T) {
 	dbService.On("CreateTransaction", mock.Anything, mock.Anything).Return(postgres.CreateTransactionRow{}, nil)
 	parser := &StubParser{}
 	transactionService := usecases.NewTransactionService(dbService, parser)
-	httpService := api.NewHTTPApiSerice(transactionService)
+	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService})
 
 	resp, _ := httpService.App.Test(req)
 

@@ -16,7 +16,7 @@ func main() {
 
 	log.Println("transaction service running", transactionService)
 
-	httpService := api.NewHTTPApiSerice(transactionService)
+	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService})
 	_ = httpService.Run(":8000")
 
 }
