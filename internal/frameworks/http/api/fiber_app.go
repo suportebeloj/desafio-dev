@@ -8,6 +8,7 @@ import (
 	"github.com/suportebeloj/desafio-dev/internal/protocols"
 	"io"
 	"log"
+	"net/url"
 	"strings"
 )
 
@@ -42,6 +43,7 @@ func (H *HTTPApiService) routes() {
 	group := H.App.Group("/api/v1/")
 	group.Add("POST", "new", H.CreateTransaction)
 	group.Add("GET", "markets", H.ListMarkets)
+	group.Add("GET", "detail/:market", H.MarketDetail)
 }
 
 func (H *HTTPApiService) Run(addrs string) error {
@@ -88,11 +90,38 @@ func (H *HTTPApiService) ListMarkets(c *fiber.Ctx) error {
 }
 
 func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
-}
+	market := c.Params("market")
+	market, err := url.QueryUnescape(market)
+	if err != nil {
+		return err
+	}
 
-func (H HTTPApiService) MarketBalance(c *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	result, err := H.transactionService.ListOperations(market)
+	if err != nil {
+		return err
+	}
+
+	balance, err := H.dbService.MarketBalance(context.Background(), market)
+	if err != nil {
+		return err
+	}
+
+	if len(result) > 0 {
+		info := struct {
+			MarketName string                              `json:"market_name"`
+			Owner      string                              `json:"owner"`
+			Balance    float64                             `json:"balance"`
+			Operations []postgres.ListMarketTransactionRow `json:"operations"`
+		}{
+			MarketName: result[0].Market,
+			Owner:      result[0].Owner,
+			Balance:    balance * -1.0,
+			Operations: result,
+		}
+
+		return c.JSON(info)
+	}
+
+	return c.Status(fiber.StatusNotFound).SendString("No transactions found for this store")
+
 }
