@@ -3,10 +3,16 @@ version: "3.9"
 services:
   app:
     build: .
+    container_name: app_desafio_dev
     ports:
       - "8000:8000"
     depends_on:
       - postgres
+    restart: always
+    environment:
+      DATABASE_TYPE: postgres
+      DATABASE_CREDENTIALS: user=pgadmin password=9dPaB2u6Z%&A7#% host=postgres dbname=desafio_dev sslmode=disable
+      PORT: ":8000"
 
   postgres:
     image: postgres:latest
