@@ -83,7 +83,7 @@ func TestTransactionService_ListOperations(t *testing.T) {
 	parser := core.NewTransactionParser()
 
 	instance := usecases.NewTransactionService(dbService, parser)
-	results, err := instance.ListOperations(1)
+	results, err := instance.ListOperations("test market")
 	assert.NoError(t, err)
 	assert.Equal(t, expected, results)
 
@@ -92,7 +92,7 @@ func TestTransactionService_ListOperations(t *testing.T) {
 	calledFunc.Unset()
 	dbService.On("ListMarketTransaction", mock.Anything, mock.Anything).Return([]postgres.ListMarketTransactionRow{}, errors.New("invalid market name"))
 
-	results, err = instance.ListOperations(2)
+	results, err = instance.ListOperations("invalid test market")
 	assert.Error(t, err)
 	assert.Nil(t, results)
 }

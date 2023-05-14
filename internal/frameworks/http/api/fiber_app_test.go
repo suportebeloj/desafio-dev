@@ -83,15 +83,11 @@ func TestHTTPApiService_CreateTransaction_ReturnError_WhenNotSendFile_WithReques
 }
 
 func TestHTTPApiService_ListMarkets_ReturnAValidList_ContainsValidMarkets(t *testing.T) {
-	expected := []postgres.ListMarketsRow{
-		{
-			ID:     1,
-			Market: "market 1",
-		},
-		{
-			ID:     2,
-			Market: "market 2",
-		},
+	expected := []string{
+		"market 1",
+		"market 2",
+		"market 3",
+		"market 4",
 	}
 	dbService := mockService.NewDbService()
 	calledFunc := dbService.On("ListMarkets", mock.Anything).Return(expected, nil)
@@ -110,7 +106,7 @@ func TestHTTPApiService_ListMarkets_ReturnAValidList_ContainsValidMarkets(t *tes
 	byteBody, err := io.ReadAll(resp.Body)
 	assert.NoError(t, err)
 
-	var body []postgres.ListMarketsRow
+	var body []string
 	err = json.Unmarshal(byteBody, &body)
 	assert.NoError(t, err)
 
@@ -120,7 +116,7 @@ func TestHTTPApiService_ListMarkets_ReturnAValidList_ContainsValidMarkets(t *tes
 
 	calledFunc.Unset()
 
-	dbService.On("ListMarkets", mock.Anything).Return([]postgres.ListMarketsRow{}, errors.New("database error"))
+	dbService.On("ListMarkets", mock.Anything).Return([]string{}, errors.New("database error"))
 
 	req = httptest.NewRequest("GET", "/api/v1/markets", nil)
 

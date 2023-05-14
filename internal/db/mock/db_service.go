@@ -15,19 +15,19 @@ func (m DbService) CreateTransaction(ctx context.Context, arg postgres.CreateTra
 	return args.Get(0).(postgres.CreateTransactionRow), args.Error(1)
 }
 
-func (m DbService) GetTransaction(ctx context.Context, id int32) (postgres.GetTransactionRow, error) {
-	args := m.Called(ctx, id)
+func (m DbService) GetTransaction(ctx context.Context, market string) (postgres.GetTransactionRow, error) {
+	args := m.Called(ctx, market)
 	return args.Get(0).(postgres.GetTransactionRow), args.Error(1)
 }
 
-func (m DbService) ListMarketTransaction(ctx context.Context, id int32) ([]postgres.ListMarketTransactionRow, error) {
-	args := m.Called(ctx, id)
+func (m DbService) ListMarketTransaction(ctx context.Context, market string) ([]postgres.ListMarketTransactionRow, error) {
+	args := m.Called(ctx, market)
 	return args.Get(0).([]postgres.ListMarketTransactionRow), args.Error(1)
 }
 
-func (m DbService) ListMarkets(ctx context.Context) ([]postgres.ListMarketsRow, error) {
+func (m DbService) ListMarkets(ctx context.Context) ([]string, error) {
 	args := m.Called(ctx)
-	return args.Get(0).([]postgres.ListMarketsRow), args.Error(1)
+	return args.Get(0).([]string), args.Error(1)
 }
 
 func (m DbService) MarketBalance(ctx context.Context, market string) (float64, error) {
