@@ -19,21 +19,20 @@ type HTTPApiService struct {
 
 type HTTPServiceOptions struct {
 	DbService postgres.Querier
-	useLogger bool
+	UseLogger bool
 }
 
 func NewHTTPApiService(transactionService protocols.ITransactionService, option *HTTPServiceOptions) *HTTPApiService {
 	s := &HTTPApiService{transactionService: transactionService}
 	app := fiber.New()
+	if option.UseLogger == true {
+		app.Use(logger.New())
+	}
 	s.App = app
 	s.routes()
 
 	if option.DbService != nil {
 		s.dbService = option.DbService
-	}
-
-	if option.useLogger {
-		s.App.Use(logger.New())
 	}
 
 	return s
