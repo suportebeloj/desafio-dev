@@ -24,6 +24,8 @@ func init() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	createSchemesIfNotExists(DbConn.Conn)
 }
 
 func (d *dbCon) CreateConnection() error {
@@ -60,5 +62,28 @@ func (s *settings) loadEnvironCredentials() error {
 	s.engine = engine
 	s.dsn = dsn
 	return nil
+
+}
+
+func createSchemesIfNotExists(db *sql.DB) {
+	rows, err := db.Query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = $1)", "transactions")
+	if err != nil {
+		log.Println(err)
+	}
+	defer rows.Close()
+
+	var exists bool
+	for rows.Next() {
+		if err := rows.Scan(&exists); err != nil {
+			log.Println(err)
+		}
+	}
+
+	if !exists {
+		_, err = db.Exec("CREATE TABLE transactions (id SERIAL PRIMARY KEY, type VARCHAR(1) NOT NULL, date DATE NOT NULL, value FLOAT NOT NULL, cpf VARCHAR(11) NOT NULL, card VARCHAR(12) NOT NULL, time TIME NOT NULL, owner VARCHAR(14) NOT NULL, market VARCHAR(19) NOT NULL)")
+		if err != nil {
+			log.Println(err)
+		}
+	}
 
 }
