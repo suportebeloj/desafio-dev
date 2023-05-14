@@ -14,9 +14,9 @@ func main() {
 	parser := core.NewTransactionParser()
 	transactionService := usecases.NewTransactionService(dbService, parser)
 
-	log.Println("transaction service running", transactionService)
+	log.Println("transaction service running")
 
-	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService})
-	_ = httpService.Run(":8000")
+	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService, UseLogger: true})
+	httpService.Run(":8000")
 
 }
