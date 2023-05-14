@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/suportebeloj/desafio-dev/internal/db/postgres"
@@ -18,6 +19,7 @@ type HTTPApiService struct {
 
 type HTTPServiceOptions struct {
 	DbService postgres.Querier
+	useLogger bool
 }
 
 func NewHTTPApiService(transactionService protocols.ITransactionService, option *HTTPServiceOptions) *HTTPApiService {
@@ -26,8 +28,12 @@ func NewHTTPApiService(transactionService protocols.ITransactionService, option 
 	s.App = app
 	s.routes()
 
-	if option != nil {
+	if option.DbService != nil {
 		s.dbService = option.DbService
+	}
+
+	if option.useLogger {
+		s.App.Use(logger.New())
 	}
 
 	return s
@@ -36,6 +42,7 @@ func NewHTTPApiService(transactionService protocols.ITransactionService, option 
 func (H *HTTPApiService) routes() {
 	group := H.App.Group("/api/v1/")
 	group.Add("POST", "new", H.CreateTransaction)
+	group.Add("GET", "markets", H.ListMarkets)
 }
 
 func (H *HTTPApiService) Run(addrs string) error {
@@ -73,8 +80,12 @@ func (H *HTTPApiService) CreateTransaction(c *fiber.Ctx) error {
 }
 
 func (H *HTTPApiService) ListMarkets(c *fiber.Ctx) error {
-	return nil
+	result, err := H.dbService.ListMarkets(context.Background())
+	if err != nil {
+		return err
+	}
 
+	return c.JSON(result)
 }
 
 func (H *HTTPApiService) MarketDetail(c *fiber.Ctx) error {
