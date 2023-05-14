@@ -2,6 +2,8 @@ package api_test
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -76,6 +78,54 @@ func TestHTTPApiService_CreateTransaction_ReturnError_WhenNotSendFile_WithReques
 	resp, err := httpService.App.Test(req)
 	assert.NoError(t, err)
 
+	assert.Equal(t, resp.StatusCode, fiber.StatusInternalServerError)
+
+}
+
+func TestHTTPApiService_ListMarkets_ReturnAValidList_ContainsValidMarkets(t *testing.T) {
+	expected := []postgres.ListMarketsRow{
+		{
+			ID:     1,
+			Market: "market 1",
+		},
+		{
+			ID:     2,
+			Market: "market 2",
+		},
+	}
+	dbService := mockService.NewDbService()
+	calledFunc := dbService.On("ListMarkets", mock.Anything).Return(expected, nil)
+	parser := &StubParser{}
+	transactionService := usecases.NewTransactionService(dbService, parser)
+	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService})
+
+	req := httptest.NewRequest("GET", "/api/v1/markets", nil)
+
+	resp, err := httpService.App.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
+
+	defer resp.Body.Close()
+
+	byteBody, err := io.ReadAll(resp.Body)
+	assert.NoError(t, err)
+
+	var body []postgres.ListMarketsRow
+	err = json.Unmarshal(byteBody, &body)
+	assert.NoError(t, err)
+
+	assert.Equal(t, expected, body)
+
+	dbService.AssertExpectations(t)
+
+	calledFunc.Unset()
+
+	dbService.On("ListMarkets", mock.Anything).Return([]postgres.ListMarketsRow{}, errors.New("database error"))
+
+	req = httptest.NewRequest("GET", "/api/v1/markets", nil)
+
+	resp, err = httpService.App.Test(req)
+	assert.NoError(t, err)
 	assert.Equal(t, resp.StatusCode, fiber.StatusInternalServerError)
 
 }
