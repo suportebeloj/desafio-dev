@@ -58,3 +58,24 @@ func TestHTTPApiSerice_CreateTransaction(t *testing.T) {
 	dbService.AssertExpectations(t)
 
 }
+
+func TestHTTPApiService_CreateTransaction_ReturnError_WhenNotSendFile_WithRequest(t *testing.T) {
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/api/v1/new", payload)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	dbService := mockService.NewDbService()
+	dbService.On("CreateTransaction", mock.Anything, mock.Anything).Return(postgres.CreateTransactionRow{}, nil)
+	parser := &StubParser{}
+	transactionService := usecases.NewTransactionService(dbService, parser)
+	httpService := api.NewHTTPApiService(transactionService, &api.HTTPServiceOptions{DbService: dbService})
+
+	resp, err := httpService.App.Test(req)
+	assert.NoError(t, err)
+
+	assert.Equal(t, resp.StatusCode, fiber.StatusInternalServerError)
+
+}
