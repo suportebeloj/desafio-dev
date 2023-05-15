@@ -6,7 +6,9 @@ import { RouterLink, RouterView } from 'vue-router'
   <header>
     <div class="header">
       <div class="header__navbrand">
-        desafio dev
+        <router-link to="/">
+          desafio dev
+        </router-link>
       </div>
     </div>
   </header>
@@ -35,8 +37,15 @@ $text-color: #333
     cursor: pointer
     transition: color 300ms
 
-    &:hover
-      color: #ccc
+    
+
+    a
+      text-decoration: none
+      color: #333
+
+      &:hover
+        color: #666 
+
 
 .header
   max-width: 100vw
