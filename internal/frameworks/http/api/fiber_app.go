@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	_ "github.com/suportebeloj/desafio-dev/docs"
@@ -28,6 +29,7 @@ type HTTPServiceOptions struct {
 func NewHTTPApiService(transactionService protocols.ITransactionService, option *HTTPServiceOptions) *HTTPApiService {
 	s := &HTTPApiService{transactionService: transactionService}
 	app := fiber.New()
+	app.Use(cors.New(cors.Config{AllowOrigins: "http://127.0.0.1:5173, http://localhost:5173,"}))
 	if option.UseLogger == true {
 		app.Use(logger.New())
 	}
