@@ -1,3 +1,45 @@
+# Desafio programação - para vaga desenvolvedor Go
+
+## Documentação da api
+Conforme solicitado no desafio abaixo uma api foi criada para receber um arquivo CNAB, parsea-lo e salvar em um banco de dados.
+
+## Execução
+Para executar a API use o comando:
+
+    docker compose up -d
+
+Após o serviço iniciar a API pode ser acessada através do endereço:
+
+    http://localhost:8000/api/vi
+
+## Swagger
+A aplicação conta com uma documentação no padrão openApi que pode ser acessada pelo endereço:
+
+    http://localhost:8000/swagger
+
+## Cliente frontend
+Um cliente frontend foi desenvolvido como extra para acessar a aplicação, para executar o cliente siga os passos abaixo usando o terminal do seu sistema:
+
+    cd frontend
+
+
+Configure um arquivo .env na raiz do projeto e informe a URL do servidor
+
+    VITE_SERVER_BASE_URL=http://localhost:8000/api/v1/
+
+Execute os comando baixo e acesse o app em seu navegador
+
+    npm install
+    npm run dev
+
+para finalizar o processo use:
+
+    CTRL + C
+
+para finalizar o servidor, use:
+
+    docker compose down -v
+
 # Desafio programação - para vaga desenvolvedor
 
 Por favor leiam este documento do começo ao fim, com muita atenção.
